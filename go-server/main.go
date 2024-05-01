@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net"
 )
@@ -10,11 +9,8 @@ import (
 
 
 func handleConnection(conn net.Conn){
-	fmt.Println(conn)
-	buff := make([]byte , 2048)
-	conn.Read(buff)
-	fmt.Println(string(buff))
-	conn.Write(buff)
+	defer conn.Close()
+	
  
 }
 
