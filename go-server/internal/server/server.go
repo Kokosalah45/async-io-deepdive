@@ -12,15 +12,19 @@ import (
 type TCPServer struct {
 	listenAddr  string
 	listener net.Listener
+	holdChan chan struct{}
 }
 
 func NewServer(address string) *TCPServer {
 	return &TCPServer{
 		listenAddr: address,
+		holdChan : make(chan struct{}),
 	}
 }
 
-
+func close(signalChannel chan struct{}){
+	<- signalChannel
+}
 
 func (s *TCPServer) Start () {
 	listener , err := net.Listen("tcp" , s.listenAddr)
@@ -34,16 +38,24 @@ func (s *TCPServer) Start () {
 
 	s.listener = listener
 
-	go s.startConnectionsPolling()
-}	
+	go s.startConnectionsPolling()	
+	
+	go close(s.holdChan)
+	s.holdChan <- struct{}{}
+
+
+	
+}
 
 func (s *TCPServer) startConnectionsPolling(){
 	for {
-		conn , err := s.listener.Accept()
+
+		fmt.Println("HE5A")
+		conn , err := s.listener.Accept() 
 
 		if err != nil {
 			log.Fatal("Couldn't get connection" , err)
-			continue // to keep listening
+			continue
 		}
 
 		go s.handleConnection(conn)
